@@ -4,6 +4,16 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
+//! res is a build-script-dependency for generating resources.
+
+#![doc(
+	html_logo_url =
+		"https://rawgit.com/aldarons-tech/res/master/res/icon.png",
+	html_favicon_url =
+		"https://rawgit.com/aldarons-tech/res/master/res/symbol.png",
+	html_root_url = "http://at.plopgrizzly.tech/res/"
+)]
+
 extern crate adi_storage;
 extern crate toml;
 extern crate utem;
