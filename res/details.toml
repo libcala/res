@@ -1,0 +1,5 @@
+name = "%res"
+comment = "%resource generation library"
+description = """
+%res is a build-script-dependency for generating resources.
+"""
