@@ -62,16 +62,40 @@ fn get(a: &toml::Value, vname: &str) -> String {
 	}
 }
 
+fn get_table(a: &toml::Value, vname: &str) -> toml::Value {
+	match a.get(vname) {
+		Some(v) => {
+			v.clone()
+		},
+		None => {
+			exit!("Couldn't find key {}!", vname);
+		},
+	}
+}
+
+fn check_exists() {
+	if adi_storage::get_exists("res") == false {
+		panic!("Folder res/ doesn't exist.");
+	}
+
+	if adi_storage::get_exists("res/icon.png") == false {
+		panic!("File res/icon.png doesn't exist.");
+	}
+
+	if adi_storage::get_exists("res/symbol.png") == false
+	{
+		panic!("File res/symbol.svg or res/symbol.png doesn't exist.");
+	}
+}
+
 /// Generate a `Res` data from folder res.
 /// 
 /// # Required Files
 /// Folder res should contain the following files:
 ///
 /// * `icon.png` - This is the launcher graphic.
-/// * `symbol.svg` - This is a simplified version of icon, which shows while the
-///	program is running.
-/// * `details.toml` - A toml file containing the name of the program, comment,
-///	and description in ran-slat format.
+/// * `symbol.svg` or `symbol.png` - This is a simplified version of icon, which
+///	shows while the program is running.
 ///
 /// # File Formats
 /// ## Aldaron's Tech File Formats
@@ -120,37 +144,65 @@ fn get(a: &toml::Value, vname: &str) -> String {
 /// # Miscellaneous
 /// * `data/` - Contains `DATA`s (extension: `.data`)
 pub fn generate() -> () {
-	if adi_storage::get_exists("res") == false {
-		panic!("Folder res/ doesn't exist.");
-	}
+	check_exists();
 
-	if adi_storage::get_exists("res/details.toml") == false {
-		panic!("File res/details.toml doesn't exist.");
-	}
+	let value = read("Cargo.toml");
 
-	if adi_storage::get_exists("res/icon.png") == false {
-		panic!("File res/details.toml doesn't exist.");
-	}
+	let package = get_table(&value, "package");
+	let metadata = get_table(&package, "metadata");
+	let res = get_table(&metadata, "res");
 
-	if adi_storage::get_exists("res/symbol.svg") == false {
-		panic!("File res/details.toml doesn't exist.");
-	}
+	println!("{:?}", res);
 
-	let value = read("res/details.toml");
+	let developer = get(&res, "developer");
+	let name = get(&res, "name");
+	let description = get(&res, "description");
 
-	let name = get(&value, "name");
-	let comment = get(&value, "comment");
-	let description = get(&value, "description");
+	let nament = get(&package, "name");
 
+	// Name, and Description for each language.
 	adi_storage::save("target/res/text/en/name.text",
 		utem::translate(English, &name));
-	adi_storage::save("target/res/text/en/comment.text",
-		utem::translate(English, &comment));
 	adi_storage::save("target/res/text/en/description.text",
 		utem::translate(English, &description));
 
+	// Developers Name Never Changes
+	adi_storage::save("target/res/text/xx/developer.text", &developer);
+
 	adi_storage::save("target/res/src/name.rs",
 		include_bytes!("res/name.rs") as &[u8]);
+	adi_storage::save("target/res/src/developer.rs",
+		include_bytes!("res/developer.rs") as &[u8]);
+
+	// Create target/res/run_linux.sh
+	adi_storage::save("target/res/run_linux.sh",
+		include_bytes!("res/run_linux.sh") as &[u8]);
+
+	// Install a .desktop for Linux
+	{
+		let mut desktop_data = format!(
+			"[Desktop Entry]\nExec={}\nIcon={}\nType=Application\n",
+			&nament, &nament);
+
+		// localize / english
+		let en_name = adi_storage::load("target/res/text/en/name.text");
+
+		desktop_data.push_str(&format!("Name[en]={}\n",
+			String::from_utf8(en_name).unwrap()));
+		// TODO: Dialects
+		/*} else {
+			program::exit("No English Translation.");
+		}*/
+
+		adi_storage::save(
+			format!("{}/.local/share/applications/{}.desktop",
+				::std::env::home_dir().unwrap().display(), nament),
+			desktop_data.as_bytes());
+	}
+
+	// Create .cargo/config
+	adi_storage::save(".cargo/config",
+		include_bytes!("res/config") as &[u8]);
 
 	println!("Done!");
 }
