@@ -1,6 +1,6 @@
 [package]
 name = "res"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 description = "A build-script-dependency for generating resources."
 keywords = ["resource", "resources", "generate", "media"]
@@ -12,6 +12,6 @@ repository = "https://github.com/aldarons-tech/res"
 exclude = ["README.md", "res/*", ".gitignore"]
 
 [dependencies]
-toml = "0.4.2"
-adi_storage = "0.1.0"
-utem = "0.1.0"
+toml = "^0.4"
+adi_storage = "^0.2"
+utem = "^0.1"

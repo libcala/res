@@ -91,11 +91,7 @@ fn check_exists() {
 /// Generate a `Res` data from folder res.
 /// 
 /// # Required Files
-/// Folder res should contain the following files:
-///
-/// * `icon.png` - This is the launcher graphic.
-/// * `symbol.svg` or `symbol.png` - This is a simplified version of icon, which
-///	shows while the program is running.
+/// Folder res must contain `icon.png`, the launcher graphic.
 ///
 /// # File Formats
 /// ## Aldaron's Tech File Formats
@@ -158,8 +154,6 @@ pub fn generate() -> () {
 	let name = get(&res, "name");
 	let description = get(&res, "description");
 
-	let nament = get(&package, "name");
-
 	// Name, and Description for each language.
 	adi_storage::save("target/res/text/en/name.text",
 		utem::translate(English, &name));
@@ -169,36 +163,11 @@ pub fn generate() -> () {
 	// Developers Name Never Changes
 	adi_storage::save("target/res/text/xx/developer.text", &developer);
 
+	// RUST: Name & Developer
 	adi_storage::save("target/res/src/name.rs",
 		include_bytes!("res/name.rs") as &[u8]);
 	adi_storage::save("target/res/src/developer.rs",
 		include_bytes!("res/developer.rs") as &[u8]);
-
-	// Create target/res/run_linux.sh
-	adi_storage::save("target/res/run_linux.sh",
-		include_bytes!("res/run_linux.sh") as &[u8]);
-
-	// Install a .desktop for Linux
-	{
-		let mut desktop_data = format!(
-			"[Desktop Entry]\nExec={}\nIcon={}\nType=Application\n",
-			&nament, &nament);
-
-		// localize / english
-		let en_name = adi_storage::load("target/res/text/en/name.text");
-
-		desktop_data.push_str(&format!("Name[en]={}\n",
-			String::from_utf8(en_name).unwrap()));
-		// TODO: Dialects
-		/*} else {
-			program::exit("No English Translation.");
-		}*/
-
-		adi_storage::save(
-			format!("{}/.local/share/applications/{}.desktop",
-				::std::env::home_dir().unwrap().display(), nament),
-			desktop_data.as_bytes());
-	}
 
 	// Create .cargo/config
 	adi_storage::save(".cargo/config",
