@@ -1,8 +1,8 @@
-// ?/developer.rs
 // Res
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/res/developer.rs
 
 {
 	include_str!(concat!(env!("CARGO_MANIFEST_DIR"),

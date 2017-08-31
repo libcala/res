@@ -1,17 +1,18 @@
-// lib.rs
 // Res
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/lib.rs
 
-//! res is a build-script-dependency for generating resources.
+//! Res is a build-script dependency developed by Plop Grizzly for managing your
+//! project's resources.
 
 #![doc(
-	html_logo_url =
-		"https://rawgit.com/aldarons-tech/res/master/res/icon.png",
-	html_favicon_url =
-		"https://rawgit.com/aldarons-tech/res/master/res/symbol.png",
-	html_root_url = "http://at.plopgrizzly.tech/res/"
+	html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
+		/res/master/res/icon.png",
+	html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
+		/res/master/res/symbol.png",
+	html_root_url = "http://plopgrizzly.com/res/"
 )]
 
 extern crate adi_storage;
