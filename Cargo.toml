@@ -17,7 +17,7 @@
 
 [package]
 name = "res"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
 
 ################################################################################
@@ -45,7 +45,7 @@ exclude = ["examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore"]
 
 [dependencies]
 toml = "^0.4"
-adi_storage = "^0.2"
+adi_storage = "^0.2.1"
 utem = "^0.1"
 
 ################################################################################
