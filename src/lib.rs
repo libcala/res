@@ -21,6 +21,7 @@ extern crate utem;
 
 use std::process;
 use utem::Language::*;
+use std::io::Write;
 
 macro_rules! exit {
 	($ ( $ arg : tt ) *) => { {
@@ -95,7 +96,7 @@ fn check_exists() {
 /// Folder res must contain `icon.png`, the launcher graphic.
 ///
 /// # File Formats
-/// ## Aldaron's Tech File Formats
+/// ## Plop Grizzly's File Formats
 /// * `.av3d` animated vector in 3 dimensions
 /// * `.av2d` animated vector in 2 dimensions
 /// * `.sv3d` static vector in 3 dimensions
@@ -140,7 +141,7 @@ fn check_exists() {
 ///
 /// # Miscellaneous
 /// * `data/` - Contains `DATA`s (extension: `.data`)
-pub fn generate() -> () {
+pub fn generate_old() -> () {
 	check_exists();
 
 	let value = read("Cargo.toml");
@@ -156,18 +157,18 @@ pub fn generate() -> () {
 	let description = get(&res, "description");
 
 	// Name, and Description for each language.
-	adi_storage::save("target/res/text/en/name.text",
-		utem::translate(English, &name));
-	adi_storage::save("target/res/text/en/description.text",
-		utem::translate(English, &description));
+	save("res/text/en/name.text",
+		utem::translate(English, &name).as_bytes());
+	save("res/text/en/description.text",
+		utem::translate(English, &description).as_bytes());
 
 	// Developers Name Never Changes
-	adi_storage::save("target/res/text/xx/developer.text", &developer);
+	save("res/text/xx/developer.text", developer.as_bytes());
 
 	// RUST: Name & Developer
-	adi_storage::save("target/res/src/name.rs",
+	save("res/src/name.rs",
 		include_bytes!("res/name.rs") as &[u8]);
-	adi_storage::save("target/res/src/developer.rs",
+	save("res/src/developer.rs",
 		include_bytes!("res/developer.rs") as &[u8]);
 
 	// Create .cargo/config
@@ -175,4 +176,156 @@ pub fn generate() -> () {
 		include_bytes!("res/config") as &[u8]);
 
 	println!("Done!");
+}
+
+fn save(filename: &str, content: &[u8]) {
+    let mut filename2 = std::env::var("OUT_DIR").unwrap();
+    filename2.push('/');
+    filename2.push_str(filename);
+
+    let mut file = std::fs::File::create(filename2).unwrap();
+    file.write_all(content).unwrap();
+}
+
+#[must_use]
+pub struct ShaderBuilder {
+    name: String,
+    transform: u8,
+    group: u8,
+    tint: u8,
+    gradient: u8,
+}
+
+impl ShaderBuilder {
+    /// Create a new `ShaderBuilder`.
+    fn new(name: &str) -> ShaderBuilder {
+        ShaderBuilder {
+            name: name.to_string(),
+            transform: 0,
+            group: 0,
+            tint: 0,
+            gradient: 0,
+        }
+    }
+
+    /// Add a unique transform to the shader.
+    pub const fn transform(mut self) -> Self {
+        self.transform += 1;
+        self
+    }
+
+    /// Add a group transform to the shader.
+    pub const fn group(mut self) -> Self {
+        self.group += 1;
+        self
+    }
+
+    /// Add a tint to the shader.
+    pub const fn tint(mut self) -> Self {
+        self.tint += 1;
+        self
+    }
+
+    /// Add a gradient (vertex-specific tint) to the shader.
+    pub const fn gradient(mut self) -> Self {
+        self.gradient += 1;
+        self
+    }
+
+/*    // Generate GLSL code.
+    fn gen() -> (Vec<u8>, Vec<u8>) {
+        (b"uniform mat4 rotation;\n\
+        attribute vec4 pos;\n\
+        attribute vec4 color;\n\
+        varying vec4 v_color;\n\
+        void main() {\n\
+            gl_Position = rotation * pos;\n\
+            v_color = color;\n\
+        }\0",
+
+        "precision mediump float;\n\
+        varying vec4 v_color;\n\
+        void main() {\n\
+            gl_FragColor = v_color;\n\
+        }\0")
+    }*/
+
+    // Generate the shader.
+    fn gen(&self) {
+        // Convert a number to text.
+        fn num_to_text(l: u8) -> [u8; 2] {
+            if l >= 128 {
+                panic!("Number too high");
+            }
+
+            let a = (l >> 4) + b'a';
+            let b = (l << 4) + b'a';
+
+            [a, b]
+        }
+
+        let mut opengl_frag = "precision mediump float;\n".to_string();
+        for i in 0..self.gradient {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_frag.push_str(&format!("varying vec4 v_gradient_{}{};\n", ntt[0], ntt[1]));
+        }
+        opengl_frag.push_str("void main() {\ngl_FragColor = ");
+        for i in 0..self.gradient {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_frag.push_str(&format!("v_gradient_{}{} * ", ntt[0], ntt[1]));
+        }
+        opengl_frag.pop();
+        opengl_frag.pop();
+        opengl_frag.pop();
+        opengl_frag.push_str(";\n}\\0");
+
+        let mut opengl_vert = "attribute vec4 pos;\nvarying vec4 v_gradient;\n".to_string();
+        for i in 0..self.transform {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
+        }
+        for i in 0..self.gradient {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_vert.push_str(&format!("attribute vec4 gradient_{}{};\n", ntt[0], ntt[1]));
+        }
+        opengl_vert.push_str("void main() {\ngl_Position = ");
+        for i in 0..self.transform {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_vert.push_str(&format!("transform_{}{} * ", ntt[0], ntt[1]));
+        }
+        opengl_vert.push_str("pos;\nv_gradient = ");
+        for i in 0..self.gradient {
+            let ntt = num_to_text(i);
+            let ntt = [ntt[0] as char, ntt[1] as char];
+            opengl_vert.push_str(&format!("gradient_{}{} * ", ntt[0], ntt[1]));
+        }
+        opengl_vert.pop();
+        opengl_vert.pop();
+        opengl_vert.pop();
+        opengl_vert.push_str(";\n}\\0");
+
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, opengl_frag, opengl_vert).as_bytes());
+    }
+}
+
+/// Generate shader resources.
+pub fn shader(name: &str) -> ShaderBuilder {
+    ShaderBuilder::new(name)
+}
+
+/// Generate 
+pub fn generate(shader_builders: &[ShaderBuilder]) {
+    let mut filename2 = std::env::var("OUT_DIR").unwrap();
+    filename2.push('/');
+    filename2.push_str("res");
+    std::fs::create_dir_all(filename2);
+
+    for shader_builder in shader_builders.iter() {
+        shader_builder.gen();
+    }
 }
