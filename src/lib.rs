@@ -286,7 +286,7 @@ impl ShaderBuilder {
             opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
         }
         if self.gradient {
-            opengl_vert.push_str("attribute vec4 gradient;\n");
+            opengl_vert.push_str("attribute vec4 col;\n");
         }
         opengl_vert.push_str("void main() {\ngl_Position = ");
         for i in 0..self.transform {
@@ -296,7 +296,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("pos;\n");
         if self.gradient {
-            opengl_vert.push_str("v_gradient = gradient;\n");
+            opengl_vert.push_str("v_gradient = col;\n");
         }
         opengl_vert.push_str("}\\0");
 
