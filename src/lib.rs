@@ -192,8 +192,8 @@ pub struct ShaderBuilder {
     name: String,
     transform: u8,
     group: u8,
-    tint: u8,
-    gradient: u8,
+    tint: bool,
+    gradient: bool,
 }
 
 impl ShaderBuilder {
@@ -203,8 +203,8 @@ impl ShaderBuilder {
             name: name.to_string(),
             transform: 0,
             group: 0,
-            tint: 0,
-            gradient: 0,
+            tint: false,
+            gradient: false,
         }
     }
 
@@ -221,14 +221,16 @@ impl ShaderBuilder {
     }
 
     /// Add a tint to the shader.
-    pub const fn tint(mut self) -> Self {
-        self.tint += 1;
+    pub fn tint(mut self) -> Self {
+        assert_eq!(self.tint, false);
+        self.tint = true;
         self
     }
 
     /// Add a gradient (vertex-specific tint) to the shader.
-    pub const fn gradient(mut self) -> Self {
-        self.gradient += 1;
+    pub fn gradient(mut self) -> Self {
+        assert_eq!(self.gradient, false);
+        self.gradient = true;
         self
     }
 
@@ -265,16 +267,12 @@ impl ShaderBuilder {
         }
 
         let mut opengl_frag = "precision mediump float;\n".to_string();
-        for i in 0..self.gradient {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_frag.push_str(&format!("varying vec4 v_gradient_{}{};\n", ntt[0], ntt[1]));
+        if self.gradient {
+            opengl_frag.push_str("varying vec4 v_gradient;\n");
         }
         opengl_frag.push_str("void main() {\ngl_FragColor = ");
-        for i in 0..self.gradient {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_frag.push_str(&format!("v_gradient_{}{} * ", ntt[0], ntt[1]));
+        if self.gradient {
+            opengl_frag.push_str("v_gradient * ");
         }
         opengl_frag.pop();
         opengl_frag.pop();
@@ -287,10 +285,8 @@ impl ShaderBuilder {
             let ntt = [ntt[0] as char, ntt[1] as char];
             opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
         }
-        for i in 0..self.gradient {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("attribute vec4 gradient_{}{};\n", ntt[0], ntt[1]));
+        if self.gradient {
+            opengl_vert.push_str("attribute vec4 gradient;\n");
         }
         opengl_vert.push_str("void main() {\ngl_Position = ");
         for i in 0..self.transform {
@@ -298,16 +294,11 @@ impl ShaderBuilder {
             let ntt = [ntt[0] as char, ntt[1] as char];
             opengl_vert.push_str(&format!("transform_{}{} * ", ntt[0], ntt[1]));
         }
-        opengl_vert.push_str("pos;\nv_gradient = ");
-        for i in 0..self.gradient {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("gradient_{}{} * ", ntt[0], ntt[1]));
+        opengl_vert.push_str("pos;\n");
+        if self.gradient {
+            opengl_vert.push_str("v_gradient = gradient;\n");
         }
-        opengl_vert.pop();
-        opengl_vert.pop();
-        opengl_vert.pop();
-        opengl_vert.push_str(";\n}\\0");
+        opengl_vert.push_str("}\\0");
 
         save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, opengl_frag, opengl_vert).as_bytes());
     }
@@ -323,7 +314,7 @@ pub fn generate(shader_builders: &[ShaderBuilder]) {
     let mut filename2 = std::env::var("OUT_DIR").unwrap();
     filename2.push('/');
     filename2.push_str("res");
-    std::fs::create_dir_all(filename2);
+    std::fs::create_dir_all(filename2).unwrap();
 
     for shader_builder in shader_builders.iter() {
         shader_builder.gen();
