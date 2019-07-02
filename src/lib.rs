@@ -319,7 +319,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, self.depth, opengl_frag, opengl_vert).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, self.depth, self.blend, opengl_frag, opengl_vert).as_bytes());
     }
 }
 
