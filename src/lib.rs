@@ -194,6 +194,8 @@ pub struct ShaderBuilder {
     group: u8,
     tint: bool,
     gradient: bool,
+    depth: bool,
+    blend: bool,
 }
 
 impl ShaderBuilder {
@@ -205,6 +207,8 @@ impl ShaderBuilder {
             group: 0,
             tint: false,
             gradient: false,
+            depth: false,
+            blend: false,
         }
     }
 
@@ -234,8 +238,23 @@ impl ShaderBuilder {
         self
     }
 
+    /// Add depth to the shader (Z coordinate for vertices).
+    pub fn depth(mut self) -> Self {
+        assert_eq!(self.depth, false);
+        self.depth = true;
+        self
+    }
+
+    /// Add transparency blending to the shader.
+    pub fn blend(mut self) -> Self {
+        assert_eq!(self.blend, false);
+        self.blend = true;
+        self
+    }
+
 /*    // Generate GLSL code.
     fn gen() -> (Vec<u8>, Vec<u8>) {
+
         (b"uniform mat4 rotation;\n\
         attribute vec4 pos;\n\
         attribute vec4 color;\n\
@@ -300,7 +319,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, opengl_frag, opengl_vert).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, self.depth, opengl_frag, opengl_vert).as_bytes());
     }
 }
 
