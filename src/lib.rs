@@ -8,20 +8,20 @@
 //! project's resources.
 
 #![doc(
-	html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/res/master/res/icon.png",
-	html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/res/master/res/symbol.png",
-	html_root_url = "http://plopgrizzly.com/res/"
+    html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
+                     /res/master/res/icon.png",
+    html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
+                        /res/master/res/symbol.png",
+    html_root_url = "http://plopgrizzly.com/res/"
 )]
 
 extern crate adi_storage;
 extern crate toml;
 extern crate utem;
 
+use std::io::Write;
 use std::process;
 use utem::Language::*;
-use std::io::Write;
 
 macro_rules! exit {
 	($ ( $ arg : tt ) *) => { {
@@ -31,67 +31,64 @@ macro_rules! exit {
 }
 
 fn read(file: &str) -> toml::Value {
-	let byte_vec = adi_storage::load(file);
-	let file_dat : String = match String::from_utf8(byte_vec) {
-		Ok(v) => v,
-		Err(_) => {
-			exit!("{} is not UTF-8!", file);
-		}
-	};
+    let byte_vec = adi_storage::load(file);
+    let file_dat: String = match String::from_utf8(byte_vec) {
+        Ok(v) => v,
+        Err(_) => {
+            exit!("{} is not UTF-8!", file);
+        }
+    };
 
-	let r : Result<toml::Value, _> = file_dat.parse();
-	match r {
-		Ok(v) => v,
-		Err(e) => {
-			println!("{}", e);
-			exit!("{} is not TOML!", file);
-		}
-	}
+    let r: Result<toml::Value, _> = file_dat.parse();
+    match r {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{}", e);
+            exit!("{} is not TOML!", file);
+        }
+    }
 }
 
 fn get(a: &toml::Value, vname: &str) -> String {
-	match a.get(vname) {
-		Some(v) => {
-			if let toml::Value::String(v) = v.clone() {
-				v
-			} else {
-				exit!("{} is not a string!", vname)
-			}
-		},
-		None => {
-			exit!("Couldn't find key {}!", vname);
-		},
-	}
+    match a.get(vname) {
+        Some(v) => {
+            if let toml::Value::String(v) = v.clone() {
+                v
+            } else {
+                exit!("{} is not a string!", vname)
+            }
+        }
+        None => {
+            exit!("Couldn't find key {}!", vname);
+        }
+    }
 }
 
 fn get_table(a: &toml::Value, vname: &str) -> toml::Value {
-	match a.get(vname) {
-		Some(v) => {
-			v.clone()
-		},
-		None => {
-			exit!("Couldn't find key {}!", vname);
-		},
-	}
+    match a.get(vname) {
+        Some(v) => v.clone(),
+        None => {
+            exit!("Couldn't find key {}!", vname);
+        }
+    }
 }
 
 fn check_exists() {
-	if adi_storage::get_exists("res") == false {
-		panic!("Folder res/ doesn't exist.");
-	}
+    if adi_storage::get_exists("res") == false {
+        panic!("Folder res/ doesn't exist.");
+    }
 
-	if adi_storage::get_exists("res/icon.png") == false {
-		panic!("File res/icon.png doesn't exist.");
-	}
+    if adi_storage::get_exists("res/icon.png") == false {
+        panic!("File res/icon.png doesn't exist.");
+    }
 
-	if adi_storage::get_exists("res/symbol.png") == false
-	{
-		panic!("File res/symbol.svg or res/symbol.png doesn't exist.");
-	}
+    if adi_storage::get_exists("res/symbol.png") == false {
+        panic!("File res/symbol.svg or res/symbol.png doesn't exist.");
+    }
 }
 
 /// Generate a `Res` data from folder res.
-/// 
+///
 /// # Required Files
 /// Folder res must contain `icon.png`, the launcher graphic.
 ///
@@ -142,40 +139,44 @@ fn check_exists() {
 /// # Miscellaneous
 /// * `data/` - Contains `DATA`s (extension: `.data`)
 pub fn generate_old() -> () {
-	check_exists();
+    check_exists();
 
-	let value = read("Cargo.toml");
+    let value = read("Cargo.toml");
 
-	let package = get_table(&value, "package");
-	let metadata = get_table(&package, "metadata");
-	let res = get_table(&metadata, "res");
+    let package = get_table(&value, "package");
+    let metadata = get_table(&package, "metadata");
+    let res = get_table(&metadata, "res");
 
-	println!("{:?}", res);
+    println!("{:?}", res);
 
-	let developer = get(&res, "developer");
-	let name = get(&res, "name");
-	let description = get(&res, "description");
+    let developer = get(&res, "developer");
+    let name = get(&res, "name");
+    let description = get(&res, "description");
 
-	// Name, and Description for each language.
-	save("res/text/en/name.text",
-		utem::translate(English, &name).as_bytes());
-	save("res/text/en/description.text",
-		utem::translate(English, &description).as_bytes());
+    // Name, and Description for each language.
+    save(
+        "res/text/en/name.text",
+        utem::translate(English, &name).as_bytes(),
+    );
+    save(
+        "res/text/en/description.text",
+        utem::translate(English, &description).as_bytes(),
+    );
 
-	// Developers Name Never Changes
-	save("res/text/xx/developer.text", developer.as_bytes());
+    // Developers Name Never Changes
+    save("res/text/xx/developer.text", developer.as_bytes());
 
-	// RUST: Name & Developer
-	save("res/src/name.rs",
-		include_bytes!("res/name.rs") as &[u8]);
-	save("res/src/developer.rs",
-		include_bytes!("res/developer.rs") as &[u8]);
+    // RUST: Name & Developer
+    save("res/src/name.rs", include_bytes!("res/name.rs") as &[u8]);
+    save(
+        "res/src/developer.rs",
+        include_bytes!("res/developer.rs") as &[u8],
+    );
 
-	// Create .cargo/config
-	adi_storage::save(".cargo/config",
-		include_bytes!("res/config") as &[u8]);
+    // Create .cargo/config
+    adi_storage::save(".cargo/config", include_bytes!("res/config") as &[u8]);
 
-	println!("Done!");
+    println!("Done!");
 }
 
 fn save(filename: &str, content: &[u8]) {
@@ -252,7 +253,7 @@ impl ShaderBuilder {
         self
     }
 
-/*    // Generate GLSL code.
+    /*    // Generate GLSL code.
     fn gen() -> (Vec<u8>, Vec<u8>) {
 
         (b"uniform mat4 rotation;\n\
@@ -294,7 +295,8 @@ impl ShaderBuilder {
         opengl_frag.push_str("void main() {\ngl_FragColor = ");
         if self.gradient {
             opengl_frag.push_str("v_gradient * ");
-        } else { // Fallback color
+        } else {
+            // Fallback color
             opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0) * ");
         }
         opengl_frag.pop();
@@ -334,7 +336,7 @@ pub fn shader(name: &str) -> ShaderBuilder {
     ShaderBuilder::new(name)
 }
 
-/// Generate 
+/// Generate
 pub fn generate(shader_builders: &[ShaderBuilder]) {
     let mut filename2 = std::env::var("OUT_DIR").unwrap();
     filename2.push('/');
