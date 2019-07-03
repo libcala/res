@@ -285,6 +285,8 @@ impl ShaderBuilder {
             [a, b]
         }
 
+        //
+
         let mut opengl_frag = "precision mediump float;\n".to_string();
         if self.gradient {
             opengl_frag.push_str("varying vec4 v_gradient;\n");
@@ -292,20 +294,24 @@ impl ShaderBuilder {
         opengl_frag.push_str("void main() {\ngl_FragColor = ");
         if self.gradient {
             opengl_frag.push_str("v_gradient * ");
+        } else { // Fallback color
+            opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0) * ");
         }
         opengl_frag.pop();
         opengl_frag.pop();
         opengl_frag.pop();
         opengl_frag.push_str(";\n}\\0");
 
-        let mut opengl_vert = "attribute vec4 pos;\nvarying vec4 v_gradient;\n".to_string();
+        //
+
+        let mut opengl_vert = "attribute vec4 pos;\n".to_string();
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
             opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
         }
         if self.gradient {
-            opengl_vert.push_str("attribute vec4 col;\n");
+            opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
         }
         opengl_vert.push_str("void main() {\ngl_Position = ");
         for i in 0..self.transform {
