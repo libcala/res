@@ -197,6 +197,7 @@ pub struct ShaderBuilder {
     gradient: bool,
     depth: bool,
     blend: bool,
+    instances_num: u16,
 }
 
 impl ShaderBuilder {
@@ -210,6 +211,7 @@ impl ShaderBuilder {
             gradient: false,
             depth: false,
             blend: false,
+            instances_num: 1,
         }
     }
 
@@ -253,24 +255,11 @@ impl ShaderBuilder {
         self
     }
 
-    /*    // Generate GLSL code.
-    fn gen() -> (Vec<u8>, Vec<u8>) {
-
-        (b"uniform mat4 rotation;\n\
-        attribute vec4 pos;\n\
-        attribute vec4 color;\n\
-        varying vec4 v_color;\n\
-        void main() {\n\
-            gl_Position = rotation * pos;\n\
-            v_color = color;\n\
-        }\0",
-
-        "precision mediump float;\n\
-        varying vec4 v_color;\n\
-        void main() {\n\
-            gl_FragColor = v_color;\n\
-        }\0")
-    }*/
+    /// Set the number of instances.
+    pub fn num_instances(mut self, n: u16) -> Self {
+        self.instances_num = n;
+        self
+    }
 
     // Generate the shader.
     fn gen(&self) {
@@ -306,11 +295,11 @@ impl ShaderBuilder {
 
         //
 
-        let mut opengl_vert = "attribute vec4 pos;\n".to_string();
+        let mut opengl_vert = "attribute vec4 pos;uniform int cala_InstanceID;\n".to_string();
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
+            opengl_vert.push_str(&format!("uniform mat4 transform_{}{}[{}];\n", ntt[0], ntt[1], self.instances_num));
         }
         if self.gradient {
             opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
@@ -319,7 +308,7 @@ impl ShaderBuilder {
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("transform_{}{} * ", ntt[0], ntt[1]));
+            opengl_vert.push_str(&format!("transform_{}{}[cala_InstanceID] * ", ntt[0], ntt[1]));
         }
         opengl_vert.push_str("pos;\n");
         if self.gradient {
@@ -327,7 +316,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.transform, self.group, self.tint, self.gradient, self.depth, self.blend, opengl_frag, opengl_vert).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.group, self.tint, self.gradient, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
     }
 }
 
