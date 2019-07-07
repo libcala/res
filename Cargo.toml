@@ -11,7 +11,7 @@ name = "res"
 version = "0.3.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 
-license = "MIT / BSL"
+license = "MIT / BSL-1.0"
 documentation = "https://docs.rs/res"
 homepage = "http://code.plopgrizzly.com/res"
 repository = "https://github.com/plopgrizzly/res"
