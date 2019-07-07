@@ -1,33 +1,20 @@
-# Res                                                                          #
-# Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>       #
-# Licensed under the MIT LICENSE                                               #
-#                             _        _                                       #
-#                            /@\——————/@\                                      #
-# .———  .                   |   o    o   |     .————      .            .       #
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
-#                 |        \              /                              __/   #
-#                           ¯————————————¯                                     #
-# Cargo.toml                                                                   #
-
-################################################################################
+# Res
+#
+# Copyright © 2017-2019 Jeron Aldaron Lau.
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_BSL.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt and accompanying file LICENSE_MIT.txt or
+# copy at https://opensource.org/licenses/MIT)
 
 [package]
 name = "res"
-version = "0.2.1"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
+version = "0.3.0"
+authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 
-################################################################################
-
-license = "MIT"
+license = "MIT / BSL"
 documentation = "https://docs.rs/res"
-homepage = "http://plopgrizzly.com/res"
+homepage = "http://code.plopgrizzly.com/res"
 repository = "https://github.com/plopgrizzly/res"
-
-################################################################################
 
 readme = "README.md"
 description = """
@@ -37,15 +24,7 @@ description = """
 keywords = ["resource", "resources", "generate", "media"]
 categories = ["data-structures", "development-tools::build-utils", "multimedia"]
 
-################################################################################
-
-exclude = ["examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore"]
-
-################################################################################
-
 [dependencies]
 toml = "^0.4"
 adi_storage = "^0.2.1"
 utem = "^0.1"
-
-################################################################################
