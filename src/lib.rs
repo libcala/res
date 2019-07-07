@@ -195,6 +195,7 @@ pub struct ShaderBuilder {
     group: u8,
     tint: bool,
     gradient: bool,
+    graphic: bool,
     depth: bool,
     blend: bool,
     instances_num: u16,
@@ -209,6 +210,7 @@ impl ShaderBuilder {
             group: 0,
             tint: false,
             gradient: false,
+            graphic: false,
             depth: false,
             blend: false,
             instances_num: 1,
@@ -238,6 +240,13 @@ impl ShaderBuilder {
     pub fn gradient(mut self) -> Self {
         assert_eq!(self.gradient, false);
         self.gradient = true;
+        self
+    }
+
+    /// Add a graphic to the shader.
+    pub fn graphic(mut self) -> Self {
+        assert_eq!(self.graphic, false);
+        self.graphic = true;
         self
     }
 
@@ -278,28 +287,36 @@ impl ShaderBuilder {
         //
 
         let mut opengl_frag = "precision mediump float;\n".to_string();
+        if self.graphic {
+            opengl_frag.push_str("uniform sampler2D tex;");
+            opengl_frag.push_str("varying vec2 texcoord;\n");
+        }
         if self.gradient {
             opengl_frag.push_str("varying vec4 v_gradient;\n");
         }
         opengl_frag.push_str("void main() {\ngl_FragColor = ");
-        if self.gradient {
-            opengl_frag.push_str("v_gradient * ");
+        if self.gradient && self.graphic {
+            opengl_frag.push_str("v_gradient * texture2D(tex, texcoord)");
+        } else if self.gradient {
+            opengl_frag.push_str("v_gradient");
+        } else if self.graphic {
+            opengl_frag.push_str("gl_FragColor = texture2D(tex, texcoord)");
         } else {
             // Fallback color
-            opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0) * ");
+            opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0)");
         }
-        opengl_frag.pop();
-        opengl_frag.pop();
-        opengl_frag.pop();
         opengl_frag.push_str(";\n}\\0");
 
         //
 
-        let mut opengl_vert = "attribute vec4 pos;uniform int cala_InstanceID;\n".to_string();
+        let mut opengl_vert = "attribute vec4 pos;\nuniform int cala_InstanceID;\n".to_string();
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
             opengl_vert.push_str(&format!("uniform mat4 transform_{}{}[{}];\n", ntt[0], ntt[1], self.instances_num));
+        }
+        if self.graphic {
+            opengl_vert.push_str("varying vec2 texcoord;\nattribute vec2 texpos;\n");
         }
         if self.gradient {
             opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
@@ -314,9 +331,12 @@ impl ShaderBuilder {
         if self.gradient {
             opengl_vert.push_str("v_gradient = col;\n");
         }
+        if self.graphic {
+            opengl_vert.push_str("texcoord = texpos;\n");
+        }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.group, self.tint, self.gradient, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},graphic:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.group, self.tint, self.gradient, self.graphic, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
     }
 }
 
