@@ -1,5 +1,5 @@
 // Res
-// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Copyright (c) 2017-2019 Jeron Aldaron Lau <jeronlau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 //
 // src/lib.rs
@@ -15,22 +15,24 @@
     html_root_url = "http://plopgrizzly.com/res/"
 )]
 
-extern crate adi_storage;
-extern crate toml;
-extern crate utem;
+mod sheet;
+
+// extern crate adi_storage;
+// extern crate toml;
 
 use std::io::Write;
-use std::process;
-use utem::Language::*;
+use std::path::Path;
 
-macro_rules! exit {
+// use std::process;
+
+/* macro_rules! exit {
 	($ ( $ arg : tt ) *) => { {
 		println!($($arg)*);
 		process::exit(1);
 	} };
-}
+} */
 
-fn read(file: &str) -> toml::Value {
+/*fn read(file: &str) -> toml::Value {
     let byte_vec = adi_storage::load(file);
     let file_dat: String = match String::from_utf8(byte_vec) {
         Ok(v) => v,
@@ -71,23 +73,9 @@ fn get_table(a: &toml::Value, vname: &str) -> toml::Value {
             exit!("Couldn't find key {}!", vname);
         }
     }
-}
+}*/
 
-fn check_exists() {
-    if adi_storage::get_exists("res") == false {
-        panic!("Folder res/ doesn't exist.");
-    }
-
-    if adi_storage::get_exists("res/icon.png") == false {
-        panic!("File res/icon.png doesn't exist.");
-    }
-
-    if adi_storage::get_exists("res/symbol.png") == false {
-        panic!("File res/symbol.svg or res/symbol.png doesn't exist.");
-    }
-}
-
-/// Generate a `Res` data from folder res.
+/*/// Generate a `Res` data from folder res.
 ///
 /// # Required Files
 /// Folder res must contain `icon.png`, the launcher graphic.
@@ -177,7 +165,7 @@ pub fn generate_old() -> () {
     adi_storage::save(".cargo/config", include_bytes!("res/config") as &[u8]);
 
     println!("Done!");
-}
+}*/
 
 fn save(filename: &str, content: &[u8]) {
     let mut filename2 = std::env::var("OUT_DIR").unwrap();
@@ -316,7 +304,7 @@ impl ShaderBuilder {
             opengl_vert.push_str(&format!("uniform mat4 transform_{}{}[{}];\n", ntt[0], ntt[1], self.instances_num));
         }
         if self.graphic {
-            opengl_vert.push_str("varying vec2 texcoord;\nattribute vec2 texpos;\n");
+            opengl_vert.push_str("uniform vec2 tsc_translate; uniform vec2 tsc_scale; varying vec2 texcoord;\nattribute vec2 texpos;\n");
         }
         if self.gradient {
             opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
@@ -332,7 +320,7 @@ impl ShaderBuilder {
             opengl_vert.push_str("v_gradient = col;\n");
         }
         if self.graphic {
-            opengl_vert.push_str("texcoord = texpos;\n");
+            opengl_vert.push_str("texcoord = texpos * tsc_scale + tsc_translate;\n");
         }
         opengl_vert.push_str("}\\0");
 
@@ -345,14 +333,47 @@ pub fn shader(name: &str) -> ShaderBuilder {
     ShaderBuilder::new(name)
 }
 
-/// Generate
+/// Generate code for including resources in your project.
+///
+/// Call this function in your `build.rs`, and in your crate's root add this:
+/// ```
+/// mod res { include!(concat!(env!("OUT_DIR"), "/res.rs")); }
+/// ```
+/// ... to create a `res` module that contains all of your resources.
+/// 
+/// # Where do I put my resources?
+/// Resources go in `/res/` under the crate's root directory.  Each type of file
+/// has it's own folder within `/res/`.
+/// - `/res/texture/` - PNG textures files.
+/// - `/res/shader/` - MuON shader files.
+///
+/// # Where do I find my resources?
+/// `res/texture/image.png`
+///
+/// ```
+/// // Get image data for image.png
+/// use crate::res::texture;
+///
+/// texture::image
+/// ```
 pub fn generate(shader_builders: &[ShaderBuilder]) {
     let mut filename2 = std::env::var("OUT_DIR").unwrap();
-    filename2.push('/');
-    filename2.push_str("res");
+    filename2.push_str("/res");
     std::fs::create_dir_all(filename2).unwrap();
 
     for shader_builder in shader_builders.iter() {
         shader_builder.gen();
     }
+
+    let mut output = "".to_string();
+
+    // Check for textures, if they exist make a texture sheet.
+    if Path::new("./res/texture/").exists() {
+        output.push_str(&sheet::write());
+    }
+
+    // Create `res.rs` module.
+    let mut filename = std::env::var("OUT_DIR").unwrap();
+    filename.push_str("/res.rs");
+    std::fs::write(filename, output).unwrap();
 }
