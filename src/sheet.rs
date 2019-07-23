@@ -1,6 +1,7 @@
 //! Generate Texture Sheet.
 
-use image;
+use pix;
+use png_pong as png;
 use sheep;
 use heck;
 
@@ -63,17 +64,19 @@ pub fn write() -> String {
 
     for path in paths {
         let path = path.unwrap().path();
-        let img = image::open(&path).unwrap();
-        let img = img.as_rgba8().expect("Failed to convert image to rgba8");
-        let dimensions = img.dimensions();
-        let bytes = img
+        let img = png::decode32_file(&path).expect("Failed to open PNG");
+        let dimensions = (img.width as u32, img.height as u32);
+        let raster = pix::RasterBuilder::new().with_pixels(img.width as u32, img.height as u32, img.buffer.as_slice());
+        let bytes: &[u8] = raster.as_u8_slice();
+/*        let bytes = img
             .pixels()
             .flat_map(|it| it.data.iter().map(|it| *it))
-            .collect::<Vec<u8>>();
+            .collect::<Vec<u8>>();*/
+        
 
         sprites.push(InputSprite {
             dimensions,
-            bytes: bytes.clone(),
+            bytes: bytes.to_vec(),
         });
 
         names.push(path.file_stem().unwrap().to_str().unwrap().to_string());
@@ -101,7 +104,12 @@ pub fn write() -> String {
     let meta = sheep::encode::<Named>(&sprite_sheet, names);
 
     // Next, we save the output to a file using the image crate again.
-    let outbuf = image::RgbaImage::from_vec(
+    let mut filename = std::env::var("OUT_DIR").unwrap();
+    filename.push_str("/res/texture-sheet.png");
+
+    png::encode32_file(filename, &sprite_sheet.bytes, sprite_sheet.dimensions.0 as usize, sprite_sheet.dimensions.1 as usize).expect("Failed to save image");
+
+/*    let outbuf = image::RgbaImage::from_vec(
         sprite_sheet.dimensions.0,
         sprite_sheet.dimensions.1,
         sprite_sheet.bytes,
@@ -111,7 +119,7 @@ pub fn write() -> String {
 
     let mut filename = std::env::var("OUT_DIR").unwrap();
     filename.push_str("/res/texture-sheet.png");
-    outbuf.save(filename).expect("Failed to save image");
+    outbuf.save(filename).expect("Failed to save image");*/
 
     // Lastly, we serialize the meta info using serde. This can be any format
     // you want, just implement the trait and pass it to encode.
