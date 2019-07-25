@@ -62,11 +62,15 @@ pub fn write() -> String {
     let mut sprites = vec![];
     let mut names = vec![];
 
+    let mut decoder_builder = png::DecoderBuilder::new();
+
     for path in paths {
         let path = path.unwrap().path();
-        let img = png::decode32_file(&path).expect("Failed to open PNG");
-        let dimensions = (img.width as u32, img.height as u32);
-        let raster = pix::RasterBuilder::new().with_pixels(img.width as u32, img.height as u32, img.buffer.as_slice());
+        let data = std::fs::read(&path).expect("Failed to open PNG");
+        let data = std::io::Cursor::new(data);
+        let decoder = decoder_builder.decode_rasters(data);
+        let (raster, _nanos) = decoder.last().expect("No frames in PNG").expect("PNG parsing error");
+        let dimensions = (raster.width(), raster.height());
         let bytes: &[u8] = raster.as_u8_slice();
 /*        let bytes = img
             .pixels()
@@ -107,7 +111,13 @@ pub fn write() -> String {
     let mut filename = std::env::var("OUT_DIR").unwrap();
     filename.push_str("/res/texture-sheet.png");
 
-    png::encode32_file(filename, &sprite_sheet.bytes, sprite_sheet.dimensions.0 as usize, sprite_sheet.dimensions.1 as usize).expect("Failed to save image");
+    let raster: pix::Raster<pix::Rgba8> = pix::RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
+
+    let mut out_data = Vec::new();
+    let mut encoder = png::EncoderBuilder::new();
+    let mut encoder = encoder.encode_rasters(&mut out_data);
+    encoder.add_frame(&raster, 0).expect("Failed to add frame");
+    std::fs::write(filename, out_data).expect("Failed to save image");
 
 /*    let outbuf = image::RgbaImage::from_vec(
         sprite_sheet.dimensions.0,
