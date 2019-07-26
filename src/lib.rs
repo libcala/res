@@ -357,6 +357,8 @@ pub fn shader(name: &str) -> ShaderBuilder {
 /// texture::image
 /// ```
 pub fn generate(shader_builders: &[ShaderBuilder]) {
+    println!("cargo:rerun-if-changed=build.rs");
+
     let mut filename2 = std::env::var("OUT_DIR").unwrap();
     filename2.push_str("/res");
     std::fs::create_dir_all(filename2).unwrap();

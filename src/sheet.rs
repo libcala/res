@@ -1,6 +1,5 @@
 //! Generate Texture Sheet.
 
-use pix;
 use png_pong as png;
 use sheep;
 use heck;
@@ -72,16 +71,13 @@ pub fn write() -> String {
         let (raster, _nanos) = decoder.last().expect("No frames in PNG").expect("PNG parsing error");
         let dimensions = (raster.width(), raster.height());
         let bytes: &[u8] = raster.as_u8_slice();
-/*        let bytes = img
-            .pixels()
-            .flat_map(|it| it.data.iter().map(|it| *it))
-            .collect::<Vec<u8>>();*/
-        
 
         sprites.push(InputSprite {
             dimensions,
             bytes: bytes.to_vec(),
         });
+
+        println!("cargo:rerun-if-changed={}", path.to_str().unwrap());
 
         names.push(path.file_stem().unwrap().to_str().unwrap().to_string());
     }
@@ -109,31 +105,25 @@ pub fn write() -> String {
 
     // Next, we save the output to a file using the image crate again.
     let mut filename = std::env::var("OUT_DIR").unwrap();
-    filename.push_str("/res/texture-sheet.png");
+//    filename.push_str("/res/texture-sheet.png");
+    filename.push_str("/res/texture-sheet.pix");
 
-    let raster: pix::Raster<pix::Rgba8> = pix::RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
+    std::fs::write(filename, &sprite_sheet.bytes[..]).expect("Failed to save image");
 
-    let mut out_data = Vec::new();
+//    let raster: pix::Raster<pix::Rgba8> = pix::RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
+
+/*    let mut out_data = Vec::new();
     let mut encoder = png::EncoderBuilder::new();
     let mut encoder = encoder.encode_rasters(&mut out_data);
     encoder.add_frame(&raster, 0).expect("Failed to add frame");
-    std::fs::write(filename, out_data).expect("Failed to save image");
-
-/*    let outbuf = image::RgbaImage::from_vec(
-        sprite_sheet.dimensions.0,
-        sprite_sheet.dimensions.1,
-        sprite_sheet.bytes,
-    ).expect("Failed to construct image from sprite sheet bytes");
-
-    // SAVE OUTPUT
-
-    let mut filename = std::env::var("OUT_DIR").unwrap();
-    filename.push_str("/res/texture-sheet.png");
-    outbuf.save(filename).expect("Failed to save image");*/
+    std::fs::write(filename, out_data).expect("Failed to save image");*/
 
     // Lastly, we serialize the meta info using serde. This can be any format
     // you want, just implement the trait and pass it to encode.
-    let mut meta_str = "pub(crate) const TEXTURE_SHEET: &[u8] = include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.png\"));\npub(crate) mod texture {\n".to_string();
+//    let mut meta_str = "pub(crate) const TEXTURE_SHEET: &[u8] = include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.png\"));\npub(crate) mod texture {\n".to_string();
+
+    let mut meta_str = format!("pub(crate) const TEXTURE_SHEET: (u16, u16, &[u8]) = ({}, {}, include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.pix\")));\npub(crate) mod texture {{\n", sprite_sheet.dimensions.0, sprite_sheet.dimensions.1);
+
     for i in &meta.sprites {
         meta_str.push_str(&format!("\tpub(crate) const {}: ([f32; 2],[f32; 2]) = ([{}f32, {}f32], [{}f32, {}f32]);\n", i.name.to_shouty_snake_case(), i.x1, i.y1, i.x2, i.y2));
     }

@@ -27,7 +27,7 @@ categories = ["data-structures", "development-tools::build-utils", "multimedia"]
 
 [dependencies]
 # rgb = "0.8"
-pix = "0.6"
+# pix = "0.6"
 png_pong = "0.0.1"
 # image = "^0.20"
 sheep = "0.2"
