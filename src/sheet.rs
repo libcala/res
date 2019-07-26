@@ -38,7 +38,7 @@ impl sheep::Format for Named {
             let y1 = in_sprites[i].position.1 as f32 / h;
             let x2 = in_sprites[i].dimensions.0 as f32 / w;
             let y2 = in_sprites[i].dimensions.1 as f32 / h;
-            let name = options[i].to_string();
+            let name = options[in_sprites[i].id].to_string();
 
             sprites.push(Sprite {
                 name,
@@ -56,6 +56,8 @@ impl sheep::Format for Named {
 }
 
 pub fn write() -> String {
+    println!("cargo:rerun-if-changed=./res/texture/");
+
     // Find all PNG files.
     let paths = read_dir("./res/texture/").unwrap();
     let mut sprites = vec![];
@@ -110,13 +112,23 @@ pub fn write() -> String {
 
     std::fs::write(filename, &sprite_sheet.bytes[..]).expect("Failed to save image");
 
-//    let raster: pix::Raster<pix::Rgba8> = pix::RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
+    // For Debugging:
+/*    {
+        let mut filename = std::env::var("OUT_DIR").unwrap();
+    //    filename.push_str("/res/texture-sheet.png");
+        filename.push_str("/res/texture-sheet.png");
 
-/*    let mut out_data = Vec::new();
+        use png_pong::prelude::*;
+
+        let raster: Raster<Rgba8> = RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
+
+    let mut out_data = Vec::new();
     let mut encoder = png::EncoderBuilder::new();
     let mut encoder = encoder.encode_rasters(&mut out_data);
     encoder.add_frame(&raster, 0).expect("Failed to add frame");
-    std::fs::write(filename, out_data).expect("Failed to save image");*/
+    std::fs::write(filename, out_data).expect("Failed to save image");
+
+    }*/
 
     // Lastly, we serialize the meta info using serde. This can be any format
     // you want, just implement the trait and pass it to encode.
