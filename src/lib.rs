@@ -180,13 +180,12 @@ fn save(filename: &str, content: &[u8]) {
 pub struct ShaderBuilder {
     name: String,
     transform: u8,
-    group: u8,
     tint: bool,
     gradient: bool,
     graphic: bool,
     depth: bool,
     blend: bool,
-    instances_num: u16,
+    instances_num: u32,
 }
 
 impl ShaderBuilder {
@@ -195,7 +194,6 @@ impl ShaderBuilder {
         ShaderBuilder {
             name: name.to_string(),
             transform: 0,
-            group: 0,
             tint: false,
             gradient: false,
             graphic: false,
@@ -208,12 +206,6 @@ impl ShaderBuilder {
     /// Add a unique transform to the shader.
     pub const fn transform(mut self) -> Self {
         self.transform += 1;
-        self
-    }
-
-    /// Add a group transform to the shader.
-    pub const fn group(mut self) -> Self {
-        self.group += 1;
         self
     }
 
@@ -253,7 +245,7 @@ impl ShaderBuilder {
     }
 
     /// Set the number of instances.
-    pub fn num_instances(mut self, n: u16) -> Self {
+    pub fn num_instances(mut self, n: u32) -> Self {
         self.instances_num = n;
         self
     }
@@ -298,6 +290,9 @@ impl ShaderBuilder {
         //
 
         let mut opengl_vert = "attribute vec4 pos;\nuniform int cala_InstanceID;\n".to_string();
+        if self.depth {
+            opengl_vert.push_str("uniform mat4 cam;\n");
+        }
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
@@ -310,6 +305,9 @@ impl ShaderBuilder {
             opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
         }
         opengl_vert.push_str("void main() {\ngl_Position = ");
+        if self.depth {
+            opengl_vert.push_str("cam * ");
+        }
         for i in 0..self.transform {
             let ntt = num_to_text(i);
             let ntt = [ntt[0] as char, ntt[1] as char];
@@ -324,7 +322,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},group:{},tint:{},gradient:{},graphic:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.group, self.tint, self.gradient, self.graphic, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},tint:{},gradient:{},graphic:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.tint, self.gradient, self.graphic, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
     }
 }
 
