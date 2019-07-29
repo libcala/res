@@ -289,9 +289,12 @@ impl ShaderBuilder {
 
         //
 
-        let mut opengl_vert = "attribute vec4 pos;\nuniform int cala_InstanceID;\n".to_string();
+        let mut opengl_vert = "uniform int cala_InstanceID;\n".to_string();
         if self.depth {
+            opengl_vert.push_str("attribute vec3 pos;\n");
             opengl_vert.push_str("uniform mat4 cam;\n");
+        } else {
+            opengl_vert.push_str("attribute vec2 pos;\n");
         }
         for i in 0..self.transform {
             let ntt = num_to_text(i);
@@ -313,7 +316,11 @@ impl ShaderBuilder {
             let ntt = [ntt[0] as char, ntt[1] as char];
             opengl_vert.push_str(&format!("transform_{}{}[cala_InstanceID] * ", ntt[0], ntt[1]));
         }
-        opengl_vert.push_str("pos;\n");
+        if self.depth {
+            opengl_vert.push_str("vec4(pos, 1.0);\n");
+        } else {
+            opengl_vert.push_str("vec4(pos, 0.0, 1.0);\n");            
+        }
         if self.gradient {
             opengl_vert.push_str("v_gradient = col;\n");
         }
