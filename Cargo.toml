@@ -8,13 +8,13 @@
 
 [package]
 name = "res"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 edition = "2018"
 
 license = "MIT / BSL-1.0"
 documentation = "https://docs.rs/res"
-homepage = "http://code.plopgrizzly.com/res"
+homepage = "https://code.plopgrizzly.com/res"
 repository = "https://github.com/plopgrizzly/res"
 
 readme = "README.md"
@@ -26,9 +26,6 @@ keywords = ["resource", "resources", "generate", "media"]
 categories = ["data-structures", "development-tools::build-utils", "multimedia"]
 
 [dependencies]
-# rgb = "0.8"
-# pix = "0.6"
 png_pong = "0.0.1"
-# image = "^0.20"
-sheep = "0.2"
+sheep = { version = "0.2", default-features = false, features = ["amethyst"] }
 heck = "0.3"

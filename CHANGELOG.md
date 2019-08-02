@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://code.plopgrizzly.com/s
 
 ## [Unreleased]
 
+## [0.4.0] - 2019-08-02
+### Added
+- Texture atlas generation, with mipmap support.
+- Camera matrix in shader.
+
+### Changed
+- Use rerun if changed in build script for faster build times.
+- Instance ID in shaders is now 32 bits instead of 16.
+
 ## [0.3.0] - 2019-07-07
 ### Added
 - Can now generate GLSL shaders for use with [window](https://crates.io/crates/window), [barg](https://crates.io/crates/barg) or [cala](https://crates.io/crates/cala) crates using `generate()`.
