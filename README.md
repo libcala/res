@@ -4,7 +4,7 @@
 <a href="https://crates.io/crates/res"><img src="https://img.shields.io/crates/v/res.svg"></a>
 <a href="https://discord.gg/nXwF59K"><img src="https://img.shields.io/badge/discord-Cala%20Project-green.svg" alt="Discord"></a>
 <br>
-  <strong><a href="https://code.plopgrizzly.com/res">Website</a> | <a href="https://github.com/PlopGrizzly/res">GitHub</a> | <a href="https://code.plopgrizzly.com/res/CHANGELOG">Changelog</a> | <a href="https://aldarobot.plopgrizzly.com/cala/tutorials">Tutorials</a> </strong>
+  <strong><a href="https://code.plopgrizzly.com/res">Website</a> | <a href="https://github.com/PlopGrizzly/res">GitHub</a> | <a href="https://code.plopgrizzly.com/res/CHANGELOG">Changelog</a> | <a href="https://code.plopgrizzly.com/res/CONTRIBUTORS">Contributors</a> | <a href="https://aldarobot.plopgrizzly.com/cala/tutorials">Tutorials</a></strong>
 </p>
 
 # Res
