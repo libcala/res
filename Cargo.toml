@@ -19,11 +19,18 @@ repository = "https://github.com/plopgrizzly/res"
 
 readme = "README.md"
 description = """
-    Res is a build-script dependency developed by Plop Grizzly for managing your
-    project's resources.
+    Res is a build-script dependency for managing your project's resources.
 """
 keywords = ["resource", "resources", "generate", "media"]
 categories = ["data-structures", "development-tools::build-utils", "multimedia"]
+
+[badges]
+# travis-ci = { repository = "PlopGrizzly/res" }
+codecov = { repository = "PlopGrizzly/res", branch = "master", service = "github" }
+coveralls = { repository = "PlopGrizzly/res", branch = "master", service = "github" }
+is-it-maintained-issue-resolution = { repository = "PlopGrizzly/res" }
+is-it-maintained-open-issues = { repository = "PlopGrizzly/res" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 png_pong = "0.0.1"

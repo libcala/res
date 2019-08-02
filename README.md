@@ -17,7 +17,7 @@ Use in conjunction with [window](https://crates.io/crates/window), [barg](https:
 - TODO
 
 ## Cala
-This crate is part of the [cala](https://crates.io/crates/cala) project.
+This crate is part of the [cala](https://aldarobot.plopgrizzly.com/cala/) project.
 
 <h1>Contributing</h1>
 <p>
