@@ -1,25 +1,17 @@
-# Res
-
 <p align="center">
 <a href="https://docs.rs/res"><img src="https://docs.rs/res/badge.svg"></a>
 <!--<a href="https://travis-ci.com/PlopGrizzly/res"><img src="https://api.travis-ci.com/PlopGrizzly/res.svg?branch=stable" alt="Cala Build Status"></a>-->
 <a href="https://crates.io/crates/res"><img src="https://img.shields.io/crates/v/res.svg"></a>
-<a href="https://discord.gg/nXwF59K"><img src="https://img.shields.io/badge/discord-join%20cala%20project-green.svg" alt="Discord"></a>
+<a href="https://discord.gg/nXwF59K"><img src="https://img.shields.io/badge/discord-Cala%20Project-green.svg" alt="Discord"></a>
 <br>
   <strong><a href="https://code.plopgrizzly.com/res">Website</a> | <a href="https://github.com/PlopGrizzly/res">GitHub</a> | <a href="https://code.plopgrizzly.com/res/CHANGELOG">Changelog</a> | <a href="https://aldarobot.plopgrizzly.com/cala/tutorials">Tutorials</a> </strong>
 </p>
 
-### A build-script-dependency for generating resources.
+# Res
+A build-script-dependency for generating resources.
 
 ## Usage
 Use in conjunction with [window](https://crates.io/crates/window), [barg](https://crates.io/crates/barg) or [cala](https://crates.io/crates/cala) crate to generate shaders.  More features to come.
-
-# Legacy (old versions)
-You can probably just ignore this part.
-
-## Required Files
-* `res/icon.png` This is the program's icon.  Avoid black or dark outline.  Used as launch icon.
-* `res/logo.png` This is a simplified version of the icon.  Use mainly black or dark colors.  Used as a favicon.
 
 ## Getting Started
 - TODO
@@ -51,6 +43,3 @@ at your option.
 <p>
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above without any additional terms or conditions.
 </p>
-
-## Links
-- [Contributors](https://code.plopgrizzly.com/res/CONTRIBUTORS)
