@@ -21,7 +21,7 @@ pub struct Named {
 }
 
 impl sheep::Format for Named {
-    type Data = Named;
+    type Data = (Named, Vec<sheep::SpriteAnchor>);
     type Options = Vec<String>;
 
     fn encode(
@@ -49,9 +49,86 @@ impl sheep::Format for Named {
             });
         }
 
-        Named {
+        let named = Named {
             sprites,
+        };
+
+        (named, in_sprites.to_vec())
+    }
+}
+
+fn sample(pixels: &[u8], width: i32, x: i32, y: i32) -> [u8;4] {
+    [
+        pixels[(x + (y * width)) as usize * 4],
+        pixels[(x + (y * width)) as usize * 4 + 1],
+        pixels[(x + (y * width)) as usize * 4 + 2],
+        pixels[(x + (y * width)) as usize * 4 + 3],
+    ]
+}
+
+fn gen_mipmaps(num_mipmaps: u32, bytes: &mut Vec<u8>, sprites: &mut [sheep::SpriteAnchor], width: i32) {
+    let mut old_width = width;
+    let mut old_pixels = bytes.clone();
+    let mut pixels = vec![0; old_pixels.len() / 4];
+
+    for _ in 0..num_mipmaps {
+        for sprite in sprites.iter_mut() {
+            sprite.position.0 /= 2;
+            sprite.position.1 /= 2;
+            sprite.dimensions.0 /= 2;
+            sprite.dimensions.1 /= 2;
+
+            for k in 0..sprite.dimensions.1 {
+                for j in 0..sprite.dimensions.0 {
+                    let (x, y) = (j as i32 + sprite.position.0 as i32, k as i32 + sprite.position.1 as i32);
+
+                    let [r00, g00, b00, a00] = sample(&old_pixels, old_width, x * 2, y * 2);
+                    let [r01, g01, b01, a01] = sample(&old_pixels, old_width, x * 2, y * 2 + 1);
+                    let [r10, g10, b10, a10] = sample(&old_pixels, old_width, x * 2 + 1, y * 2);
+                    let [r11, g11, b11, a11] = sample(&old_pixels, old_width, x * 2 + 1, y * 2 + 1);
+
+/*                    let [r, g, b, a] = if j < sprite.dimensions.0 / 2 {
+                        // +X
+                        if k < sprite.dimensions.1 / 2 {
+                            // +X+Y
+                            [r11, g11, b11, a11]
+                        } else {
+                            // +X-Y
+                            [r10, g10, b10, a10]
+                        }
+                    } else {
+                        // -X
+                        if k < sprite.dimensions.1 / 2 {
+                            // -X+Y
+                            [r01, g01, b01, a01]
+                        } else {
+                            // -X-Y
+                            [r00, g00, b00, a00]
+                        }
+                    };*/
+
+                    let [r, g, b, a] = [
+                        (r00 as u16 + r01 as u16 + r10 as u16 + r11 as u16 >> 2) as u8,
+                        (g00 as u16 + g01 as u16 + g10 as u16 + g11 as u16 >> 2) as u8,
+                        (b00 as u16 + b01 as u16 + b10 as u16 + b11 as u16 >> 2) as u8,
+                        (a00 as u16 + a01 as u16 + a10 as u16 + a11 as u16 >> 2) as u8,
+                    ];
+
+                    pixels[(x + y * (old_width / 2)) as usize * 4] = r;
+                    pixels[(x + y * (old_width / 2)) as usize * 4 + 1] = g;
+                    pixels[(x + y * (old_width / 2)) as usize * 4 + 2] = b;
+                    pixels[(x + y * (old_width / 2)) as usize * 4 + 3] = a;
+                }
+            }
         }
+
+        // Add to bytes.
+        bytes.extend(&pixels);
+
+        // For next run through loop.
+        old_width /= 2;
+        old_pixels = pixels;
+        pixels = vec![0; old_pixels.len() / 4];
     }
 }
 
@@ -62,6 +139,7 @@ pub fn write() -> String {
     let paths = read_dir("./res/texture/").unwrap();
     let mut sprites = vec![];
     let mut names = vec![];
+    let mut min_size: Option<u32> = None;
 
     let mut decoder_builder = png::DecoderBuilder::new();
 
@@ -74,6 +152,12 @@ pub fn write() -> String {
         let dimensions = (raster.width(), raster.height());
         let bytes: &[u8] = raster.as_u8_slice();
 
+        if let Some(min) = min_size {
+            min_size = Some(min.min(dimensions.0).min(dimensions.1));
+        } else {
+            min_size = Some(dimensions.0.min(dimensions.1));
+        };
+
         sprites.push(InputSprite {
             dimensions,
             bytes: bytes.to_vec(),
@@ -83,6 +167,21 @@ pub fn write() -> String {
 
         names.push(path.file_stem().unwrap().to_str().unwrap().to_string());
     }
+
+    // Calculate number of mipmaps to generate.
+    let mipmap_count = if let Some(min) = min_size {
+        let mut full_size = 4096;
+        let mut mipmap_count = 0;
+
+        while full_size > min {
+            full_size /= 2;
+            mipmap_count += 1;
+        }
+
+        mipmap_count
+    } else {
+        0
+    };
 
     // Set texture sheet size.
     let options = MaxrectsOptions::default()
@@ -96,43 +195,22 @@ pub fn write() -> String {
     // MaxrectsPacker always returns a single result. Other packers can return
     // multiple sheets; should they, for example, choose to enforce a maximum
     // texture size per sheet.
-    let sprite_sheet = results
+    let mut sprite_sheet = results
         .into_iter()
         .next()
         .expect("Should have returned a spritesheet");
 
     // Now, we can encode the sprite sheet in a format of our choosing to
     // save things such as offsets, positions of the sprites and so on.
-    let meta = sheep::encode::<Named>(&sprite_sheet, names);
+    let (meta, mut ins) = sheep::encode::<Named>(&sprite_sheet, names);
+
+    // Generate mipmaps.
+    gen_mipmaps(mipmap_count, &mut sprite_sheet.bytes, &mut ins, 4096);
 
     // Next, we save the output to a file using the image crate again.
     let mut filename = std::env::var("OUT_DIR").unwrap();
-//    filename.push_str("/res/texture-sheet.png");
     filename.push_str("/res/texture-sheet.pix");
-
     std::fs::write(filename, &sprite_sheet.bytes[..]).expect("Failed to save image");
-
-    // For Debugging:
-/*    {
-        let mut filename = std::env::var("OUT_DIR").unwrap();
-    //    filename.push_str("/res/texture-sheet.png");
-        filename.push_str("/res/texture-sheet.png");
-
-        use png_pong::prelude::*;
-
-        let raster: Raster<Rgba8> = RasterBuilder::new().with_u8_buffer(sprite_sheet.dimensions.0, sprite_sheet.dimensions.1, &sprite_sheet.bytes[..]);
-
-    let mut out_data = Vec::new();
-    let mut encoder = png::EncoderBuilder::new();
-    let mut encoder = encoder.encode_rasters(&mut out_data);
-    encoder.add_frame(&raster, 0).expect("Failed to add frame");
-    std::fs::write(filename, out_data).expect("Failed to save image");
-
-    }*/
-
-    // Lastly, we serialize the meta info using serde. This can be any format
-    // you want, just implement the trait and pass it to encode.
-//    let mut meta_str = "pub(crate) const TEXTURE_SHEET: &[u8] = include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.png\"));\npub(crate) mod texture {\n".to_string();
 
     let mut meta_str = format!("pub(crate) const TEXTURE_SHEET: (u16, u16, &[u8]) = ({}, {}, include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.pix\")));\npub(crate) mod texture {{\n", sprite_sheet.dimensions.0, sprite_sheet.dimensions.1);
 
