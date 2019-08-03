@@ -8,7 +8,7 @@
 
 [package]
 name = "res"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 edition = "2018"
 
@@ -33,6 +33,6 @@ is-it-maintained-open-issues = { repository = "PlopGrizzly/res" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-png_pong = "0.0.1"
+png_pong = "0.0.2"
 sheep = { version = "0.2", default-features = false, features = ["amethyst"] }
 heck = "0.3"

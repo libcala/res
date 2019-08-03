@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://code.plopgrizzly.com/s
 
 ## [Unreleased]
 
+## [0.4.1] - 2019-08-03
+### Changed
+- Update to png\_pong 0.0.2.
+
 ## [0.4.0] - 2019-08-02
 ### Added
 - Texture atlas generation, with mipmap support.
