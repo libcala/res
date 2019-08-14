@@ -267,6 +267,9 @@ impl ShaderBuilder {
         //
 
         let mut opengl_frag = "precision mediump float;\n".to_string();
+        if self.tint {
+            opengl_frag.push_str("uniform vec4 tint;\n");
+        }
         if self.graphic {
             opengl_frag.push_str("uniform sampler2D tex;");
             opengl_frag.push_str("varying vec2 texcoord;\n");
@@ -274,18 +277,21 @@ impl ShaderBuilder {
         if self.gradient {
             opengl_frag.push_str("varying vec4 v_gradient;\n");
         }
-        opengl_frag.push_str("void main() {\ngl_FragColor = ");
+        opengl_frag.push_str("void main() {\nvec4 outColor = ");
         if self.gradient && self.graphic {
             opengl_frag.push_str("v_gradient * texture2D(tex, texcoord)");
         } else if self.gradient {
             opengl_frag.push_str("v_gradient");
         } else if self.graphic {
-            opengl_frag.push_str("gl_FragColor = texture2D(tex, texcoord)");
+            opengl_frag.push_str("texture2D(tex, texcoord)");
         } else {
             // Fallback color
             opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0)");
         }
-        opengl_frag.push_str(";\n}\\0");
+        if self.tint {
+            opengl_frag.push_str(";\noutColor *= tint");
+        }
+        opengl_frag.push_str(";\ngl_FragColor = outColor;\n}\\0");
 
         //
 
