@@ -185,7 +185,6 @@ pub struct ShaderBuilder {
     graphic: bool,
     depth: bool,
     blend: bool,
-    instances_num: u32,
 }
 
 impl ShaderBuilder {
@@ -199,7 +198,6 @@ impl ShaderBuilder {
             graphic: false,
             depth: false,
             blend: false,
-            instances_num: 1,
         }
     }
 
@@ -244,28 +242,8 @@ impl ShaderBuilder {
         self
     }
 
-    /// Set the number of instances.
-    pub fn num_instances(mut self, n: u32) -> Self {
-        self.instances_num = n;
-        self
-    }
-
     // Generate the shader.
     fn gen(&self) {
-        // Convert a number to text.
-        fn num_to_text(l: u8) -> [u8; 2] {
-            if l >= 128 {
-                panic!("Number too high");
-            }
-
-            let a = (l >> 4) + b'a';
-            let b = (l << 4) + b'a';
-
-            [a, b]
-        }
-
-        //
-
         let mut opengl_frag = "precision mediump float;\n".to_string();
         if self.tint {
             opengl_frag.push_str("uniform vec4 tint;\n");
@@ -312,13 +290,8 @@ impl ShaderBuilder {
         } else {
             opengl_vert.push_str("attribute vec2 pos;\n");
         }
-        for i in 0..self.transform {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("uniform mat4 transform_{}{};\n", ntt[0], ntt[1]));
-        }
         if self.graphic {
-            opengl_vert.push_str("uniform vec2 tsc_translate; uniform vec2 tsc_scale; varying vec2 texcoord;\nattribute vec2 texpos;\n");
+            opengl_vert.push_str("varying vec2 texcoord;\nattribute vec2 texpos;\n");
         }
         if self.gradient {
             opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
@@ -328,16 +301,11 @@ impl ShaderBuilder {
             opengl_vert.push_str("v_gradient = col;\n");
         }
         if self.graphic {
-            opengl_vert.push_str("texcoord = texpos * tsc_scale + tsc_translate;\n");
+            opengl_vert.push_str("texcoord = texpos;\n");
         }
         opengl_vert.push_str("gl_Position = ");
         if self.depth {
             opengl_vert.push_str("cam * ");
-        }
-        for i in 0..self.transform {
-            let ntt = num_to_text(i);
-            let ntt = [ntt[0] as char, ntt[1] as char];
-            opengl_vert.push_str(&format!("transform_{}{} * ", ntt[0], ntt[1]));
         }
         if self.depth {
             opengl_vert.push_str("vec4(pos, 1.0);\n");
@@ -346,7 +314,7 @@ impl ShaderBuilder {
         }
         opengl_vert.push_str("}\\0");
 
-        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{transform:{},tint:{},gradient:{},graphic:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\",instance_count:{}}}", self.transform, self.tint, self.gradient, self.graphic, self.depth, self.blend, opengl_frag, opengl_vert, self.instances_num).as_bytes());
+        save(&format!("res/{}.rs", self.name), format!("ShaderBuilder {{tint:{},gradient:{},graphic:{},depth:{},blend:{},opengl_frag:\"{}\",opengl_vert:\"{}\"}}", self.tint, self.gradient, self.graphic, self.depth, self.blend, opengl_frag, opengl_vert).as_bytes());
     }
 }
 
