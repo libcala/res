@@ -7,11 +7,9 @@ use heck;
 use sheep::{InputSprite, MaxrectsPacker, MaxrectsOptions};
 use std::fs::read_dir;
 use heck::ShoutySnakeCase;
-use std::convert::TryInto;
 
 pub struct Sprite {
     name: String,
-    id: u32,
     x1: f32,
     y1: f32,
     x2: f32,
@@ -36,7 +34,6 @@ impl sheep::Format for Named {
         let mut sprites = vec![];
 
         for i in 0..in_sprites.len() {
-            let id = i.try_into().unwrap();
             let x1 = in_sprites[i].position.0 as f32 / w;
             let y1 = in_sprites[i].position.1 as f32 / h;
             let x2 = in_sprites[i].dimensions.0 as f32 / w;
@@ -45,7 +42,6 @@ impl sheep::Format for Named {
 
             sprites.push(Sprite {
                 name,
-                id,
                 x1,
                 y1,
                 x2,
@@ -219,7 +215,7 @@ pub fn write() -> String {
     let mut meta_str = format!("pub(crate) const TEXTURE_SHEET: (u16, u16, &[u8]) = ({}, {}, include_bytes!(concat!(env!(\"OUT_DIR\"), \"/res/texture-sheet.pix\")));\npub(crate) mod texture {{\n", sprite_sheet.dimensions.0, sprite_sheet.dimensions.1);
 
     for i in &meta.sprites {
-        meta_str.push_str(&format!("\tpub(crate) const {}: (u32, [f32; 2],[f32; 2]) = ({}, [{}f32, {}f32], [{}f32, {}f32]);\n", i.name.to_shouty_snake_case(), i.id, i.x1, i.y1, i.x2, i.y2));
+        meta_str.push_str(&format!("\tpub(crate) const {}: ([f32; 2],[f32; 2]) = ([{}f32, {}f32], [{}f32, {}f32]);\n", i.name.to_shouty_snake_case(), i.x1, i.y1, i.x2, i.y2));
     }
     meta_str.push_str("}\n");
 
