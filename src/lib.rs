@@ -26,10 +26,10 @@ use std::path::Path;
 // use std::process;
 
 /* macro_rules! exit {
-	($ ( $ arg : tt ) *) => { {
-		println!($($arg)*);
-		process::exit(1);
-	} };
+    ($ ( $ arg : tt ) *) => { {
+        println!($($arg)*);
+        process::exit(1);
+    } };
 } */
 
 /*fn read(file: &str) -> toml::Value {
@@ -271,13 +271,11 @@ impl ShaderBuilder {
                 opengl_frag.push_str("tint * ");
             }
             opengl_frag.push_str("texture2D(tex, texcoord)");
+        } else if self.tint {
+            opengl_frag.push_str("tint");
         } else {
-            if self.tint {
-                opengl_frag.push_str("tint");
-            } else {
-                // Fallback color
-                opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0)");
-            }
+            // Fallback color
+            opengl_frag.push_str("vec4(1.0, 1.0, 1.0, 1.0)");
         }
         opengl_frag.push_str(";\n}\\0");
 
@@ -291,10 +289,12 @@ impl ShaderBuilder {
             opengl_vert.push_str("attribute vec2 pos;\n");
         }
         if self.graphic {
-            opengl_vert.push_str("varying vec2 texcoord;\nattribute vec2 texpos;\n");
+            opengl_vert
+                .push_str("varying vec2 texcoord;\nattribute vec2 texpos;\n");
         }
         if self.gradient {
-            opengl_vert.push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
+            opengl_vert
+                .push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
         }
         opengl_vert.push_str("void main() {\n");
         if self.gradient {
@@ -310,7 +310,7 @@ impl ShaderBuilder {
         if self.depth {
             opengl_vert.push_str("vec4(pos, 1.0);\n");
         } else {
-            opengl_vert.push_str("vec4(pos, 0.0, 1.0);\n");            
+            opengl_vert.push_str("vec4(pos, 0.0, 1.0);\n");
         }
         opengl_vert.push_str("}\\0");
 
@@ -326,11 +326,11 @@ pub fn shader(name: &str) -> ShaderBuilder {
 /// Generate code for including resources in your project.
 ///
 /// Call this function in your `build.rs`, and in your crate's root add this:
-/// ```
+/// ```rust,ignore
 /// mod res { include!(concat!(env!("OUT_DIR"), "/res.rs")); }
 /// ```
 /// ... to create a `res` module that contains all of your resources.
-/// 
+///
 /// # Where do I put my resources?
 /// Resources go in `/res/` under the crate's root directory.  Each type of file
 /// has it's own folder within `/res/`.
@@ -340,7 +340,7 @@ pub fn shader(name: &str) -> ShaderBuilder {
 /// # Where do I find my resources?
 /// `res/texture/image.png`
 ///
-/// ```
+/// ```rust,ignore
 /// // Get image data for image.png
 /// use crate::res::texture;
 ///

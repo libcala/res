@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://code.plopgrizzly.com/s
 
 ## [Unreleased]
 
+## [0.5.0] - 2019-10-24
+### Added
+- Tint support
+
+## Changed
+- "Instances" are renamed to "Groups"
+- Shaders & Texture Coordinates are simplified, now
+
 ## [0.4.1] - 2019-08-03
 ### Changed
 - Update to png\_pong 0.0.2.
