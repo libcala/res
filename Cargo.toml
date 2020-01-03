@@ -31,6 +31,6 @@ is-it-maintained-open-issues = { repository = "libcala/res" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-png_pong = "0.0.2"
+png_pong = "0.1.0"
 sheep = { version = "0.3", default-features = false }
 heck = "0.3"
