@@ -3,6 +3,7 @@
 use heck;
 use png_pong as png;
 use sheep;
+use pix;
 
 use heck::ShoutySnakeCase;
 use sheep::{InputSprite, MaxrectsOptions, MaxrectsPacker};
@@ -167,14 +168,12 @@ pub fn write() -> String {
     let mut names = vec![];
     let mut min_size: Option<u32> = None;
 
-    let mut decoder_builder = png::DecoderBuilder::new();
-
     for path in paths {
         let path = path.unwrap().path();
         let data = std::fs::read(&path).expect("Failed to open PNG");
         let data = std::io::Cursor::new(data);
-        let decoder = decoder_builder.decode_rasters(data);
-        let (raster, _nanos) = decoder
+        let decoder = png::FrameDecoder::<_, pix::Rgba8>::new(data);
+        let png::Frame { raster, delay: _ } = decoder
             .last()
             .expect("No frames in PNG")
             .expect("PNG parsing error");

@@ -34,3 +34,4 @@ maintenance = { status = "actively-developed" }
 png_pong = "0.1.0"
 sheep = { version = "0.3", default-features = false }
 heck = "0.3"
+pix = "0.7"
