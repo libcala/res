@@ -172,7 +172,7 @@ pub fn write() -> String {
         let path = path.unwrap().path();
         let data = std::fs::read(&path).expect("Failed to open PNG");
         let data = std::io::Cursor::new(data);
-        let decoder = png::FrameDecoder::<_, pix::SepSRgba8>::new(data);
+        let decoder = png::FrameDecoder::<_, pix::rgb::SRgba8>::new(data);
         let png::Frame { raster, delay: _ } = decoder
             .last()
             .expect("No frames in PNG")
