@@ -294,11 +294,20 @@ impl ShaderBuilder {
         }
         if self.gradient {
             opengl_vert
-                .push_str("varying vec4 v_gradient;\nattribute vec4 col;\n");
+                .push_str("varying vec4 v_gradient;\n");
+            if self.blend {
+                opengl_vert.push_str("attribute vec4 col;\n");
+            } else {
+                opengl_vert.push_str("attribute vec3 col;\n");
+            }
         }
         opengl_vert.push_str("void main() {\n");
         if self.gradient {
-            opengl_vert.push_str("v_gradient = col;\n");
+            if self.blend {
+                opengl_vert.push_str("v_gradient = col;\n");
+            } else {
+                opengl_vert.push_str("v_gradient = vec4(col.r, col.g, col.b, 1.0);\n");
+            }
         }
         if self.graphic {
             opengl_vert.push_str("texcoord = texpos;\n");
@@ -308,9 +317,9 @@ impl ShaderBuilder {
             opengl_vert.push_str("cam * ");
         }
         if self.depth {
-            opengl_vert.push_str("vec4(pos, 1.0);\n");
+            opengl_vert.push_str("vec4(pos.x, -pox.y, pos.z, 1.0);\n");
         } else {
-            opengl_vert.push_str("vec4(pos, 0.0, 1.0);\n");
+            opengl_vert.push_str("vec4(pos.x, -pos.y, 0.0, 1.0);\n");
         }
         opengl_vert.push_str("}\\0");
 
