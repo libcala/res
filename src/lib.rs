@@ -281,10 +281,9 @@ impl ShaderBuilder {
 
         //
 
-        let mut opengl_vert = "".to_string();
+        let mut opengl_vert = "uniform mat4 cam;\n".to_string();
         if self.depth {
             opengl_vert.push_str("attribute vec3 pos;\n");
-            opengl_vert.push_str("uniform mat4 cam;\n");
         } else {
             opengl_vert.push_str("attribute vec2 pos;\n");
         }
@@ -312,14 +311,11 @@ impl ShaderBuilder {
         if self.graphic {
             opengl_vert.push_str("texcoord = texpos;\n");
         }
-        opengl_vert.push_str("gl_Position = ");
+        opengl_vert.push_str("gl_Position = cam * ");
         if self.depth {
-            opengl_vert.push_str("cam * ");
-        }
-        if self.depth {
-            opengl_vert.push_str("vec4(pos.x, -pox.y, pos.z, 1.0);\n");
+            opengl_vert.push_str("vec4(pos, 1.0);\n");
         } else {
-            opengl_vert.push_str("vec4(pos.x, -pos.y, 0.0, 1.0);\n");
+            opengl_vert.push_str("vec4(pos, 0.0, 1.0);\n");
         }
         opengl_vert.push_str("}\\0");
 
