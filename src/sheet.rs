@@ -1,9 +1,6 @@
 //! Generate Texture Sheet.
 
-use heck;
 use png_pong as png;
-use sheep;
-use pix;
 
 use heck::ShoutySnakeCase;
 use sheep::{InputSprite, MaxrectsOptions, MaxrectsPacker};

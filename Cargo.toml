@@ -1,6 +1,6 @@
 # Res
 #
-# Copyright © 2017-2019 Jeron Aldaron Lau.
+# Copyright © 2017-2020 Jeron Aldaron Lau.
 # Dual-licensed under either the MIT License or the Boost Software License,
 # Version 1.0.  (See accompanying file LICENSE_BSL.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt and accompanying file LICENSE_MIT.txt or
@@ -8,11 +8,11 @@
 
 [package]
 name = "res"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 edition = "2018"
 
-license = "MIT / BSL-1.0"
+license = "Apache-2.0 OR Zlib"
 documentation = "https://docs.rs/res"
 homepage = "https://libcala.github.io/res"
 repository = "https://github.com/libcala/res"

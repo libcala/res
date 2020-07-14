@@ -1,6 +1,6 @@
 // Res
-// Copyright (c) 2017-2019 Jeron Aldaron Lau <jeronlau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// Copyright (c) 2017-2020 Jeron Aldaron Lau <jeronlau@plopgrizzly.com>
+// Licensed under the ZLIB LICENSE
 //
 // src/lib.rs
 
