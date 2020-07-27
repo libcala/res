@@ -169,11 +169,12 @@ pub fn write() -> String {
         let path = path.unwrap().path();
         let data = std::fs::read(&path).expect("Failed to open PNG");
         let data = std::io::Cursor::new(data);
-        let decoder = png::FrameDecoder::<_, pix::rgb::SRgba8>::new(data);
-        let png::Frame { raster, delay: _ } = decoder
+        let decoder = png::Decoder::new(data).expect("Not PNG").into_steps();
+        let png::Step { raster, delay: _ } = decoder
             .last()
             .expect("No frames in PNG")
             .expect("PNG parsing error");
+        let raster: pix::Raster::<pix::rgb::SRgba8> = raster.into();
         let dimensions = (raster.width(), raster.height());
         let bytes: &[u8] = raster.as_u8_slice();
 
