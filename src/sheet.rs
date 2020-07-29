@@ -66,9 +66,9 @@ fn gen_mipmaps(
     num_mipmaps: u32,
     bytes: &mut Vec<u8>,
     sprites: &mut [sheep::SpriteAnchor],
-    width: i32,
+    width: u32,
 ) {
-    let mut old_width = width;
+    let mut old_width = width as i32;
     let mut old_pixels = bytes.clone();
     let mut pixels = vec![0; old_pixels.len() / 4];
 
@@ -223,13 +223,14 @@ pub fn write() -> String {
         .into_iter()
         .next()
         .expect("Should have returned a spritesheet");
+    let sheet_width = sprite_sheet.dimensions.0;
 
     // Now, we can encode the sprite sheet in a format of our choosing to
     // save things such as offsets, positions of the sprites and so on.
     let (meta, mut ins) = sheep::encode::<Named>(&sprite_sheet, names);
 
     // Generate mipmaps.
-    gen_mipmaps(mipmap_count, &mut sprite_sheet.bytes, &mut ins, 4096);
+    gen_mipmaps(mipmap_count, &mut sprite_sheet.bytes, &mut ins, sheet_width);
 
     // Next, we save the output to a file using the image crate again.
     let mut filename = std::env::var("OUT_DIR").unwrap();
