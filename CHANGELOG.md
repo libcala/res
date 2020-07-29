@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://code.plopgrizzly.com/semver/).
 
+## [0.6.1] - 2020-07-28
+### Changed
+- Update version of `png_pong` used
+
+### Fixed
+- Widths that aren't 4096 not working
+
 ## [0.6.0] - 2020-07-13
 ### Changed
 - Work with the newest version of Cala (v0.8.0)
