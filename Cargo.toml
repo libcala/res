@@ -33,5 +33,5 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 png_pong = "0.7"
 sheep = { version = "0.3", default-features = false }
-heck = "0.3"
+heck = "0.4"
 pix = "0.13"
